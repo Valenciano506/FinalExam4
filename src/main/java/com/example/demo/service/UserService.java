@@ -1,19 +1,21 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.User;
+import java.util.List;
 
 /*
- * Service Layer: it is in charge of business logic,
- * the controller layer uses this to manage user data
+ * Interfaz del servicio de usuarios - define las operaciones disponibles
  * @author Valenciano
- * 2 jun 2026
  */
-
-
 public interface UserService {
 
-	User getUser(long id);
+    List<User> getAllUsers();
 
-	User saveUser(User user);
+    User getUser(long id);
 
+    User saveUser(User user);
+
+    User updateUser(long id, User user);
+
+    void deleteUser(long id);
 }
