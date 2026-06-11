@@ -7,10 +7,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * Implementación del servicio de productos
- * Contiene la lógica de negocio para gestionar productos
+ * El filtrado se realiza en memoria sobre la lista completa de productos
  * @author Valenciano
  */
 @Service
@@ -43,6 +44,10 @@ public class ProductServiceImpl implements ProductService {
         existing.setPrice(updatedProduct.getPrice());
         existing.setStock(updatedProduct.getStock());
         existing.setCategory(updatedProduct.getCategory());
+        existing.setYear(updatedProduct.getYear());
+        existing.setHorsepower(updatedProduct.getHorsepower());
+        existing.setTransmission(updatedProduct.getTransmission());
+        existing.setColor(updatedProduct.getColor());
         return productRepository.save(existing);
     }
 
@@ -56,12 +61,22 @@ public class ProductServiceImpl implements ProductService {
                                          String search, boolean onlyInStock,
                                          String sortBy, String sortDir) {
 
-        // Obtener productos filtrados desde el repositorio
-        List<Product> products = productRepository.filterProducts(
-                category, minPrice, maxPrice, search, onlyInStock
-        );
+        // Traemos todos los productos y filtramos en Java con streams
+        List<Product> products = productRepository.findAll();
 
-        // Ordenación en memoria según el campo solicitado
+        products = products.stream()
+            .filter(p -> category == null || category.isBlank() ||
+                    p.getCategory().equalsIgnoreCase(category))
+            .filter(p -> minPrice == null ||
+                    p.getPrice() >= minPrice)
+            .filter(p -> maxPrice == null ||
+                    p.getPrice() <= maxPrice)
+            .filter(p -> search == null || search.isBlank() ||
+                    p.getName().toLowerCase().contains(search.toLowerCase()))
+            .filter(p -> !onlyInStock || p.getStock() > 0)
+            .collect(Collectors.toList());
+
+        // Ordenación
         Comparator<Product> comparator = switch (sortBy != null ? sortBy : "") {
             case "price" -> Comparator.comparing(Product::getPrice);
             case "stock" -> Comparator.comparing(Product::getStock);
